@@ -52,12 +52,9 @@ class UsersController(
     }
 
     @PostMapping("/refreshToken")
-    fun refreshToken(): ResponseJwtTokenDto{
-        val userId = SecurityContextHolder.getContext().authentication.name
-
-        return ResponseJwtTokenDto(
-            accessToken = jwtUtil.createToken("access", userId),
-            refreshToken = jwtUtil.createToken("refresh", userId)
-        )
+    fun refreshToken(@RequestHeader("Authorization") token: String): ResponseEntity<ResponseJwtTokenDto> {
+        val refreshToken = token.removePrefix("Bearer ")
+        val tokens = userService.refreshToken(refreshToken)
+        return ResponseEntity.ok(tokens)
     }
 }

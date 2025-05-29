@@ -95,4 +95,26 @@ class UserServiceImpl(
 
         userRepository.delete(user)
     }
+
+    @Transactional
+    override fun refreshToken(refreshToken: String): ResponseJwtTokenDto {
+        val userId = SecurityContextHolder.getContext().authentication.name
+
+        val user = userRepository.findById(userId).orElseThrow {
+            NoSuchElementException("삭제 대상 계정이 존재하지 않습니다.")
+        }
+
+        if(user.token != refreshToken) {
+            throw IllegalStateException("이미 사용된 리프레시 토큰입니다.")
+        }
+
+        val newFreshRefreshToken = jwtUtil.createToken("refresh", userId)
+        user.token = newFreshRefreshToken
+        userRepository.save(user)
+
+        return ResponseJwtTokenDto(
+            accessToken = jwtUtil.createToken("access", userId),
+            refreshToken = newFreshRefreshToken
+        )
+    }
 }

@@ -12,4 +12,5 @@ interface UserService {
     fun findByUserId(userId: String): ResponseUserDto
     fun updateUser(userDto: RequestUserUpdateDto)
     fun deleteUser(userId: String)
+    fun refreshToken(refreshToken: String): ResponseJwtTokenDto
 }

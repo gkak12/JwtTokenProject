@@ -12,10 +12,10 @@ import javax.crypto.SecretKey
 class JwtUtil {
 
     private val secretKey: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
-    private val validityAccessTime: Long = 1000 * 60 * 60 // 1시간
-    private val validityRefreshTime: Long = 1000 * 60 * 60 * 24 * 14 // 2주
+    private val validityAccessTime: Long = 1000 * 30 // 1시간    1000 * 60 * 60
+    private val validityRefreshTime: Long = 1000 * 60 // 2주   1000 * 60 * 60 * 24 * 14
 
-    // Access Token 생성
+    // Access/Refresh Token 생성
     fun createToken(flag:String, userId: String): String {
         val claims: Claims = Jwts.claims().setSubject(userId) // Token에 사용자 아이디 추가
         val now = Date()

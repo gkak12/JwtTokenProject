@@ -14,11 +14,11 @@ class UserRepositoryDslImpl(
 
     private val log = LoggerFactory.getLogger(UserRepositoryDslImpl::class.java)
 
-    override fun findByUserName(userName: String): User? {
+    override fun findInfoByUsername(userName: String): User? {
         return jpaQueryFactory
             .select(user)
             .from(user)
-            .where(user.name.eq(userName))
+            .where(user.name.like("%"+userName+"%"))
             .fetchOne()
     }
 }
