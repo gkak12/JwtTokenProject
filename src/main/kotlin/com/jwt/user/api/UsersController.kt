@@ -1,5 +1,6 @@
 package com.jwt.user.api
 
+import com.jwt.comm.JwtUtil
 import com.jwt.user.domain.request.RequestUserCreateDto
 import com.jwt.user.domain.request.RequestUserLoginDto
 import com.jwt.user.domain.request.RequestUserUpdateDto
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/users")
 class UsersController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val jwtUtil: JwtUtil
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -47,5 +49,15 @@ class UsersController(
         val userId = SecurityContextHolder.getContext().authentication.name
         userService.deleteUser(userId)
         return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/refreshToken")
+    fun refreshToken(): ResponseJwtTokenDto{
+        val userId = SecurityContextHolder.getContext().authentication.name
+
+        return ResponseJwtTokenDto(
+            accessToken = jwtUtil.createToken("access", userId),
+            refreshToken = jwtUtil.createToken("refresh", userId)
+        )
     }
 }
