@@ -41,6 +41,7 @@ class UserServiceImpl(
         userRepository.save(user)
     }
 
+    @Transactional
     override fun loginUser(userLoginDto: RequestUserLoginDto): ResponseJwtTokenDto {
         val userId = userLoginDto.id
         val userPassword = userLoginDto.password
@@ -53,9 +54,16 @@ class UserServiceImpl(
             throw BadCredentialsException("입력한 비밀번호가 일치하지 않습니다.")
         }
 
+        var accessToken = jwtUtil.createToken("access", userId)
+        var refreshToken = jwtUtil.createToken("refresh", userId)
+
+        // refresh 토큰 저장
+        user.token = refreshToken
+        userRepository.save(user)
+
         return ResponseJwtTokenDto(
-            accessToken = jwtUtil.createToken("access", userId),
-            refreshToken = jwtUtil.createToken("refresh", userId)
+            accessToken = accessToken,
+            refreshToken = refreshToken
         )
     }
 
