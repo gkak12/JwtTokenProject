@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: none # update
+  datasource:
+    url: jdbc:sqlite:mydb.db
+    driver-class-name: org.sqlite.JDBC
+    username: admin
+    password: admin
+  sql:
+    init:
+      mode: always
