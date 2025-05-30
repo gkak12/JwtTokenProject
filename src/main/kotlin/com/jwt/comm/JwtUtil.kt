@@ -4,22 +4,29 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
+import org.springframework.beans.factory.annotation.Value
+
 import org.springframework.stereotype.Component
 import java.util.Date
 import javax.crypto.SecretKey
 
 @Component
-class JwtUtil {
+class JwtUtil(
+    @Value("\${jwt.access-token-expiration}")
+    private val validityAccessTime: Long,
+    @Value("\${jwt.access-token-expiration}")
+    private val validityRefreshTime: Long
+){
 
     private val secretKey: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
-    private val validityAccessTime: Long = 1000 * 60   // 1시간
-    private val validityRefreshTime: Long = 1000 * 60 * 2    // 2주
 
     // Access/Refresh Token 생성
     fun createToken(flag:String, userId: String): String {
         val claims: Claims = Jwts.claims().setSubject(userId) // Token에 사용자 아이디 추가
         val now = Date()
-        val validity = if (flag == "access") Date(now.time + validityAccessTime) else Date(now.time + validityRefreshTime)  // 만료 시간 설정
+
+        // 토큰 타입에 따라 만료 시간 설정
+        val validity = if (flag == "access") Date(now.time + validityAccessTime) else Date(now.time + validityRefreshTime)
 
         return Jwts.builder()
             .setClaims(claims)
