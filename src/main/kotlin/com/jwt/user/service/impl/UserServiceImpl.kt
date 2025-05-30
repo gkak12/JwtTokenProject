@@ -1,6 +1,7 @@
 package com.jwt.user.service.impl
 
 import com.jwt.comm.JwtUtil
+import com.jwt.comm.RedisComponent
 import com.jwt.user.domain.entity.User
 import com.jwt.user.domain.mapper.UserMapper
 import com.jwt.user.domain.request.RequestUserCreateDto
@@ -23,6 +24,7 @@ class UserServiceImpl(
     private val userMapper: UserMapper,
     private val jwtUtil: JwtUtil,
     private val bCryptPasswordEncoder: BCryptPasswordEncoder,
+    private val redisComponent: RedisComponent
 ) : UserService {
 
     private val log = LoggerFactory.getLogger(com.jwt.user.service.impl.UserServiceImpl::class.java)
@@ -54,12 +56,11 @@ class UserServiceImpl(
             throw BadCredentialsException("입력한 비밀번호가 일치하지 않습니다.")
         }
 
-        var accessToken = jwtUtil.createToken("access", userId)
-        var refreshToken = jwtUtil.createToken("refresh", userId)
+        val accessToken = jwtUtil.createToken("access", userId)
+        val refreshToken = jwtUtil.createToken("refresh", userId)
 
-        // refresh 토큰 저장
-        user.token = refreshToken
-        userRepository.save(user)
+        // refresh 토큰 Redis 저장
+        redisComponent.setToken(userId+":token", refreshToken);
 
         return ResponseJwtTokenDto(
             accessToken = accessToken,
@@ -99,22 +100,20 @@ class UserServiceImpl(
     @Transactional
     override fun refreshToken(refreshToken: String): ResponseJwtTokenDto {
         val userId = SecurityContextHolder.getContext().authentication.name
+        val userTokenKey = userId+":token"
+        val oldRefreshToken = redisComponent.getToken(userTokenKey)!!
 
-        val user = userRepository.findById(userId).orElseThrow {
-            NoSuchElementException("삭제 대상 계정이 존재하지 않습니다.")
+        if(oldRefreshToken != refreshToken) {
+            throw IllegalStateException("유효하지 않은 리프레시 토큰입니다.")
         }
 
-        if(user.token != refreshToken) {
-            throw IllegalStateException("이미 사용된 리프레시 토큰입니다.")
-        }
-
-        val newFreshRefreshToken = jwtUtil.createToken("refresh", userId)
-        user.token = newFreshRefreshToken
-        userRepository.save(user)
+        // refresh 토큰 Redis 저장
+        val newRefreshToken = jwtUtil.createToken("refresh", userId)
+        redisComponent.setToken(userTokenKey, newRefreshToken);
 
         return ResponseJwtTokenDto(
             accessToken = jwtUtil.createToken("access", userId),
-            refreshToken = newFreshRefreshToken
+            refreshToken = newRefreshToken
         )
     }
 }

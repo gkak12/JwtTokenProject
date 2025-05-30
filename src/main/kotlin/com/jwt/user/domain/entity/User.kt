@@ -21,7 +21,4 @@ open class User() {
 
     @Column(name = "AUTH")
     open var auth: String = ""
-
-    @Column(name = "TOKEN")
-    open var token: String = ""
 }

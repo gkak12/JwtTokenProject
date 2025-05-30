@@ -58,6 +58,9 @@ dependencies {
     runtimeOnly("org.xerial:sqlite-jdbc:3.42.0.0")
     implementation("org.hibernate.orm:hibernate-community-dialects")
 
+    // Redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     kapt("org.projectlombok:lombok")
