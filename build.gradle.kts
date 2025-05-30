@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     java
     groovy
@@ -28,6 +30,9 @@ configurations {
     }
 }
 
+val activeProfile = System.getProperty("spring.profiles.active") ?: "test"
+println("------------ profile: $activeProfile ------------")
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -55,7 +60,12 @@ dependencies {
     implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5")
 
     // DB
-    runtimeOnly("org.xerial:sqlite-jdbc:3.42.0.0")
+    if (activeProfile == "test") {
+        runtimeOnly("org.xerial:sqlite-jdbc:3.42.0.0")
+    } else {
+        runtimeOnly("org.postgresql:postgresql:42.5.0")
+    }
+
     implementation("org.hibernate.orm:hibernate-community-dialects")
 
     // Redis

@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: ${springProfilesActive:test}  # default test 환경
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
     hibernate:
