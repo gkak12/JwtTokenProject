@@ -1,5 +1,6 @@
 package com.jwt.user.service.impl
 
+import com.jwt.comm.JwtEnums
 import com.jwt.comm.JwtUtil
 import com.jwt.comm.RedisComponent
 import com.jwt.user.domain.entity.User
@@ -56,11 +57,11 @@ class UserServiceImpl(
             throw BadCredentialsException("입력한 비밀번호가 일치하지 않습니다.")
         }
 
-        val accessToken = jwtUtil.createToken("access", userId)
-        val refreshToken = jwtUtil.createToken("refresh", userId)
+        val accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
+        val refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
 
         // refresh 토큰 Redis 저장
-        redisComponent.setToken(userId+":token", refreshToken);
+        redisComponent.setToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken);
 
         return ResponseJwtTokenDto(
             accessToken = accessToken,
@@ -100,7 +101,7 @@ class UserServiceImpl(
     @Transactional
     override fun refreshToken(refreshToken: String): ResponseJwtTokenDto {
         val userId = SecurityContextHolder.getContext().authentication.name
-        val userTokenKey = userId+":token"
+        val userTokenKey = userId+JwtEnums.TOKEN_KEY.value
         val oldRefreshToken = redisComponent.getToken(userTokenKey)!!
 
         if(oldRefreshToken != refreshToken) {
@@ -108,11 +109,11 @@ class UserServiceImpl(
         }
 
         // refresh 토큰 Redis 저장
-        val newRefreshToken = jwtUtil.createToken("refresh", userId)
+        val newRefreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
         redisComponent.setToken(userTokenKey, newRefreshToken);
 
         return ResponseJwtTokenDto(
-            accessToken = jwtUtil.createToken("access", userId),
+            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId),
             refreshToken = newRefreshToken
         )
     }

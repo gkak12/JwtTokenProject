@@ -1,5 +1,6 @@
 package com.jwt.user.api
 
+import com.jwt.comm.JwtEnums
 import com.jwt.comm.JwtUtil
 import com.jwt.user.domain.request.RequestUserCreateDto
 import com.jwt.user.domain.request.RequestUserLoginDto
@@ -53,7 +54,7 @@ class UsersController(
 
     @PostMapping("/refreshToken")
     fun refreshToken(@RequestHeader("Authorization") token: String): ResponseEntity<ResponseJwtTokenDto> {
-        val refreshToken = token.removePrefix("Bearer ")
+        val refreshToken = token.removePrefix(JwtEnums.BEARER.value)
         val tokens = userService.refreshToken(refreshToken)
         return ResponseEntity.ok(tokens)
     }
