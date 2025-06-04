@@ -8,8 +8,8 @@ spring:
   datasource:
     url: jdbc:sqlite:mydb.db
     driver-class-name: org.sqlite.JDBC
-    username: admin
-    password: admin
+    username: ENC(0quG6FVbayjtAMT/26YQxA==)
+    password: ENC(cOh6l6GKbZQdo8p9EE98/A==)
   sql:
     init:
       mode: always
@@ -21,3 +21,7 @@ spring:
 jwt:
   access-token-expiration: 900000     # 15분(밀리초 단위)
   refresh-token-expiration: 1800000   # 30분(밀리초 단위)
+
+jasypt:
+  encryptor:
+    bean: jasyptEncryptor
