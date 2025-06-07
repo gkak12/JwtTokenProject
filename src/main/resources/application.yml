@@ -25,3 +25,6 @@ jwt:
 jasypt:
   encryptor:
     bean: jasyptEncryptor
+
+server:
+  shutdown: graceful
