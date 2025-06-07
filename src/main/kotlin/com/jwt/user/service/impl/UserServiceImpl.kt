@@ -1,5 +1,7 @@
 package com.jwt.user.service.impl
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.jwt.comm.AccountEnums
 import com.jwt.comm.JwtEnums
 import com.jwt.comm.JwtUtil
 import com.jwt.comm.RedisComponent
@@ -25,7 +27,8 @@ class UserServiceImpl(
     private val userMapper: UserMapper,
     private val jwtUtil: JwtUtil,
     private val bCryptPasswordEncoder: BCryptPasswordEncoder,
-    private val redisComponent: RedisComponent
+    private val redisComponent: RedisComponent,
+    private val objectMapper: ObjectMapper
 ) : UserService {
 
     private val log = LoggerFactory.getLogger(com.jwt.user.service.impl.UserServiceImpl::class.java)
@@ -57,11 +60,14 @@ class UserServiceImpl(
             throw BadCredentialsException("입력한 비밀번호가 일치하지 않습니다.")
         }
 
+        val userJson = objectMapper.writeValueAsString(user)
         val accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
         val refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
 
-        // refresh 토큰 Redis 저장
-        redisComponent.setToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken);
+        log.info("user info: {}", userJson)
+
+        redisComponent.setAccountInfo(userId+AccountEnums.REDIS_INFO, userJson)    // 계정 정보 Redis 저장
+        redisComponent.setToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
 
         return ResponseJwtTokenDto(
             accessToken = accessToken,
@@ -69,10 +75,19 @@ class UserServiceImpl(
         )
     }
 
+    override fun findRedisByUserId(userId: String): String {
+        val userInfo = requireNotNull(redisComponent.getAccountInfo(userId+AccountEnums.REDIS_INFO)) {
+            "Redis에 해당 키에 대한 계정 정보가 존재하지 않습니다."
+        }
+
+        return userInfo
+    }
+
     override fun findByUserId(userId: String): ResponseUserDto {
         val user = userRepository.findById(userId).orElseThrow {
             NoSuchElementException("조회 대상 계정이 존재하지 않습니다.")
         }
+
         return userMapper.toDto(user)
     }
 

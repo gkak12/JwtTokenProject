@@ -15,4 +15,12 @@ class RedisComponent (
     fun getToken(key:String): String?{
         return redisTemplate.opsForValue().get(key)
     }
+
+    fun setAccountInfo(key: String, value: String){
+        redisTemplate.opsForValue().set(key, value, 24, TimeUnit.HOURS)
+    }
+
+    fun getAccountInfo(key: String): String?{
+        return redisTemplate.opsForValue().get(key)
+    }
 }

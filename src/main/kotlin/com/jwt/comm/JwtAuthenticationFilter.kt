@@ -36,7 +36,8 @@ class JwtAuthenticationFilter(
             val token = getTokenFromRequest(request)
             val userId = jwtUtil.getUsername(token ?: throw IllegalArgumentException("Token is missing"))
 
-            userService.findByUserId(userId) // 삭제된 계정인지 확인
+            // 삭제된 계정인지 확인
+            userService.findRedisByUserId(userId)
 
             if (jwtUtil.validateToken(token, userId)) {
                 val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
