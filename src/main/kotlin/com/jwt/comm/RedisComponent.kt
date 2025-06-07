@@ -1,23 +1,26 @@
 package com.jwt.comm
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component("redisComponent")
 class RedisComponent (
-    private val redisTemplate: RedisTemplate<String, String>
+    private val redisTemplate: RedisTemplate<String, String>,
+    @Value("\${jwt.access-token-expiration}")
+    private val validityRefreshTime: Long
 ){
-    fun setToken(key:String, token: String){
-        redisTemplate.opsForValue().set(key, token, 1209600, TimeUnit.SECONDS)
+    fun setRefreshToken(key:String, token: String){
+        redisTemplate.opsForValue().set(key, token, validityRefreshTime, TimeUnit.MILLISECONDS)
     }
 
-    fun getToken(key:String): String?{
+    fun getRefreshToken(key:String): String?{
         return redisTemplate.opsForValue().get(key)
     }
 
     fun setAccountInfo(key: String, value: String){
-        redisTemplate.opsForValue().set(key, value, 24, TimeUnit.HOURS)
+        redisTemplate.opsForValue().set(key, value, validityRefreshTime, TimeUnit.MILLISECONDS)
     }
 
     fun getAccountInfo(key: String): String?{

@@ -22,6 +22,9 @@ jwt:
   access-token-expiration: 900000     # 15분(밀리초 단위)
   refresh-token-expiration: 1800000   # 30분(밀리초 단위)
 
+redis:
+  account-expiration: 1800000   # 30분(밀리초 단위)
+
 jasypt:
   encryptor:
     bean: jasyptEncryptor

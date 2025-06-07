@@ -1,10 +1,7 @@
 package com.jwt.user.service.impl
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jwt.comm.AccountEnums
-import com.jwt.comm.JwtEnums
-import com.jwt.comm.JwtUtil
-import com.jwt.comm.RedisComponent
+import com.jwt.comm.*
 import com.jwt.user.domain.entity.User
 import com.jwt.user.domain.mapper.UserMapper
 import com.jwt.user.domain.request.RequestUserCreateDto
@@ -67,7 +64,7 @@ class UserServiceImpl(
         log.info("user info: {}", userJson)
 
         redisComponent.setAccountInfo(userId+AccountEnums.REDIS_INFO, userJson)    // 계정 정보 Redis 저장
-        redisComponent.setToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
+        redisComponent.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
 
         return ResponseJwtTokenDto(
             accessToken = accessToken,
@@ -117,15 +114,24 @@ class UserServiceImpl(
     override fun refreshToken(refreshToken: String): ResponseJwtTokenDto {
         val userId = SecurityContextHolder.getContext().authentication.name
         val userTokenKey = userId+JwtEnums.TOKEN_KEY.value
-        val oldRefreshToken = redisComponent.getToken(userTokenKey)!!
+        val storedRefreshToken = requireNotNull(redisComponent.getRefreshToken(userTokenKey)){
+            "로그인이 만료되었습니다. 다시 로그인하세요."
+        }
 
-        if(oldRefreshToken != refreshToken) {
+        // refresh 토큰 비교
+        if(storedRefreshToken != refreshToken) {
+            redisComponent.setRefreshToken(userTokenKey, "") // 토큰 무효화
+            throw SecurityException("비정상적인 접근입니다. 다시 로그인하세요.")
+        }
+
+        // refresh 토큰 검증
+        if(!jwtUtil.validateToken(refreshToken, userId)) {
             throw IllegalStateException("유효하지 않은 리프레시 토큰입니다.")
         }
 
         // refresh 토큰 Redis 저장
         val newRefreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
-        redisComponent.setToken(userTokenKey, newRefreshToken);
+        redisComponent.setRefreshToken(userTokenKey, newRefreshToken);
 
         return ResponseJwtTokenDto(
             accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId),

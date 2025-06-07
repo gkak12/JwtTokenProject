@@ -14,7 +14,7 @@ import javax.crypto.SecretKey
 class JwtUtil(
     @Value("\${jwt.access-token-expiration}")
     private val validityAccessTime: Long,
-    @Value("\${jwt.access-token-expiration}")
+    @Value("\${jwt.refres-token-expiration}")
     private val validityRefreshTime: Long
 ){
 
