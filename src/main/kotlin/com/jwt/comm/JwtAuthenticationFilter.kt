@@ -1,6 +1,5 @@
 package com.jwt.comm
 
-import com.jwt.user.service.UserService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
@@ -14,7 +13,7 @@ import java.io.IOException
 
 class JwtAuthenticationFilter(
     private val jwtUtil: JwtUtil,
-    private val userService: UserService
+    private val redisComponent: RedisComponent
 ) : OncePerRequestFilter() {
 
     private val log = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
@@ -37,7 +36,10 @@ class JwtAuthenticationFilter(
             val userId = jwtUtil.getUsername(token ?: throw IllegalArgumentException("Token is missing"))
 
             // 삭제된 계정인지 확인
-            userService.findRedisByUserId(userId)
+            val userTokenKey = userId+JwtEnums.TOKEN_KEY.value
+            requireNotNull(redisComponent.getRefreshToken(userTokenKey)){
+                "삭제된 계정입니다."
+            }
 
             if (jwtUtil.validateToken(token, userId)) {
                 val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))

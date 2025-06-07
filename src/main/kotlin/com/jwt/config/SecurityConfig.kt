@@ -1,8 +1,8 @@
 package com.jwt.config
 
-import com.jwt.comm.JwtUtil
 import com.jwt.comm.JwtAuthenticationFilter
-import com.jwt.user.service.UserService
+import com.jwt.comm.JwtUtil
+import com.jwt.comm.RedisComponent
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.Customizer
@@ -24,8 +24,8 @@ class SecurityConfig {
     }
 
     @Bean
-    fun jwtAuthenticationFilter(jwtUtil: JwtUtil, userService: UserService): JwtAuthenticationFilter {
-        return JwtAuthenticationFilter(jwtUtil, userService)
+    fun jwtAuthenticationFilter(jwtUtil: JwtUtil, redisComponent: RedisComponent): JwtAuthenticationFilter {
+        return JwtAuthenticationFilter(jwtUtil, redisComponent)
     }
 
     @Bean

@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 @Component("redisComponent")
 class RedisComponent (
     private val redisTemplate: RedisTemplate<String, String>,
-    @Value("\${jwt.access-token-expiration}")
+    @Value("\${jwt.refresh-token-expiration}")
     private val validityRefreshTime: Long
 ){
     fun setRefreshToken(key:String, token: String){
@@ -16,14 +16,6 @@ class RedisComponent (
     }
 
     fun getRefreshToken(key:String): String?{
-        return redisTemplate.opsForValue().get(key)
-    }
-
-    fun setAccountInfo(key: String, value: String){
-        redisTemplate.opsForValue().set(key, value, validityRefreshTime, TimeUnit.MILLISECONDS)
-    }
-
-    fun getAccountInfo(key: String): String?{
         return redisTemplate.opsForValue().get(key)
     }
 }

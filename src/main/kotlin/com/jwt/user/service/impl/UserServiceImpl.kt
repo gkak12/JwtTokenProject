@@ -1,7 +1,9 @@
 package com.jwt.user.service.impl
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jwt.comm.*
+import com.jwt.comm.JwtEnums
+import com.jwt.comm.JwtUtil
+import com.jwt.comm.RedisComponent
 import com.jwt.user.domain.entity.User
 import com.jwt.user.domain.mapper.UserMapper
 import com.jwt.user.domain.request.RequestUserCreateDto
@@ -57,27 +59,15 @@ class UserServiceImpl(
             throw BadCredentialsException("입력한 비밀번호가 일치하지 않습니다.")
         }
 
-        val userJson = objectMapper.writeValueAsString(user)
         val accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
         val refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
 
-        log.info("user info: {}", userJson)
-
-        redisComponent.setAccountInfo(userId+AccountEnums.REDIS_INFO, userJson)    // 계정 정보 Redis 저장
         redisComponent.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
 
         return ResponseJwtTokenDto(
             accessToken = accessToken,
             refreshToken = refreshToken
         )
-    }
-
-    override fun findRedisByUserId(userId: String): String {
-        val userInfo = requireNotNull(redisComponent.getAccountInfo(userId+AccountEnums.REDIS_INFO)) {
-            "Redis에 해당 키에 대한 계정 정보가 존재하지 않습니다."
-        }
-
-        return userInfo
     }
 
     override fun findByUserId(userId: String): ResponseUserDto {
