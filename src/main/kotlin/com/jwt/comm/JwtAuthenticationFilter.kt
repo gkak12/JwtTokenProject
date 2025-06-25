@@ -32,8 +32,8 @@ class JwtAuthenticationFilter(
         }
 
         try {
-            val token = getTokenFromRequest(request)
-            val userId = jwtUtil.getUsername(token ?: throw IllegalArgumentException("Token is missing"))
+            val accessToken = getAccessTokenFromRequest(request)
+            val userId = jwtUtil.getUsername(accessToken ?: throw IllegalArgumentException("Token is missing"))
 
             // 삭제된 계정인지 확인
             val userTokenKey = userId+JwtEnums.TOKEN_KEY.value
@@ -41,7 +41,7 @@ class JwtAuthenticationFilter(
                 "삭제된 계정입니다."
             }
 
-            if (jwtUtil.validateToken(token, userId)) {
+            if (jwtUtil.validateToken(accessToken, userId)) {
                 val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
                 val authentication = UsernamePasswordAuthenticationToken(userId, null, authorities)
                 SecurityContextHolder.getContext().authentication = authentication
@@ -55,7 +55,7 @@ class JwtAuthenticationFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun getTokenFromRequest(request: HttpServletRequest): String? {
+    private fun getAccessTokenFromRequest(request: HttpServletRequest): String? {
         val header = request.getHeader("Authorization")
         return if (header != null && header.startsWith("Bearer ")) {
             header.substring(7)
