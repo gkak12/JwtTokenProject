@@ -65,8 +65,7 @@ class UserServiceImpl(
         redisComponent.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
 
         return ResponseJwtTokenDto(
-            accessToken = accessToken,
-            refreshToken = refreshToken
+            accessToken = accessToken
         )
     }
 
@@ -121,11 +120,10 @@ class UserServiceImpl(
 
         // refresh 토큰 Redis 저장
         val newRefreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
-        redisComponent.setRefreshToken(userTokenKey, newRefreshToken);
+        redisComponent.setRefreshToken(userTokenKey, newRefreshToken)
 
         return ResponseJwtTokenDto(
-            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId),
-            refreshToken = newRefreshToken
+            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
         )
     }
 }
