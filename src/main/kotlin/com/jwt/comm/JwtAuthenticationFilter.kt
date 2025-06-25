@@ -26,7 +26,7 @@ class JwtAuthenticationFilter(
     ) {
         val uri = request.requestURI
 
-        if (uri.startsWith("/users/login") || uri.startsWith("/users/signup")) {
+        if (uri.startsWith("/users/login") || uri.startsWith("/users/signup") || uri.startsWith("/oauth2/me")) {
             filterChain.doFilter(request, response)
             return
         }

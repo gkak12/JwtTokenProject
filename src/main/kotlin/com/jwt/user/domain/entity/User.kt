@@ -7,18 +7,19 @@ import jakarta.persistence.Table
 
 @Entity
 @Table(name = "USER")
-open class User() {
-
+open class User(
     @Id
     @Column(name = "ID")
-    open var id: String = ""
+    open var id: String = "",
 
     @Column(name = "PASSWORD")
-    open var password: String = ""
+    open var password: String = "",
 
     @Column(name = "NAME")
-    open var name: String = ""
+    open var name: String = "",
 
     @Column(name = "AUTH")
     open var auth: String = ""
+) {
+    constructor() : this("", "", "", "")
 }

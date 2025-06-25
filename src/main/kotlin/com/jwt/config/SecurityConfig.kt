@@ -3,6 +3,9 @@ package com.jwt.config
 import com.jwt.comm.JwtAuthenticationFilter
 import com.jwt.comm.JwtUtil
 import com.jwt.comm.RedisComponent
+import com.jwt.oauth2.service.CustomOAuth2UserService
+import com.jwt.oauth2.handler.OAuth2AuthenticationFailureHandler
+import com.jwt.oauth2.handler.OAuth2AuthenticationSuccessHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.Customizer
@@ -15,11 +18,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig {
+class SecurityConfig(
+    private val customOAuth2UserService: CustomOAuth2UserService,
+    private val successHandler: OAuth2AuthenticationSuccessHandler,
+    private val failureHandler: OAuth2AuthenticationFailureHandler
+) {
 
     companion object {
         private val AUTH_WHITELIST = arrayOf(
-            "/users/login", "/users/signup"
+            "/users/login", "/users/signup", "/oauth2/me"
         )
     }
 
@@ -41,6 +48,11 @@ class SecurityConfig {
             .authorizeHttpRequests {
                 it.requestMatchers(*AUTH_WHITELIST).permitAll()
                     .anyRequest().authenticated()
+            }
+            .oauth2Login {
+                it.userInfoEndpoint{endpoint -> endpoint.userService(customOAuth2UserService)}
+                    .successHandler(successHandler)
+                    .failureHandler(failureHandler)
             }
 
         return http.build()
