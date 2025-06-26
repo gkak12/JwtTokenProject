@@ -8,9 +8,12 @@ import com.jwt.user.domain.entity.User
 import com.jwt.user.domain.mapper.UserMapper
 import com.jwt.user.domain.request.RequestUserCreateDto
 import com.jwt.user.domain.request.RequestUserLoginDto
+import com.jwt.user.domain.request.RequestUserSearchDto
 import com.jwt.user.domain.request.RequestUserUpdateDto
 import com.jwt.user.domain.response.ResponseJwtTokenDto
+import com.jwt.user.domain.response.ResponsePageDto
 import com.jwt.user.domain.response.ResponseUserDto
+import com.jwt.user.domain.response.ResponseUserPageDto
 import com.jwt.user.repository.UserRepository
 import com.jwt.user.service.UserService
 import jakarta.transaction.Transactional
@@ -124,6 +127,22 @@ class UserServiceImpl(
 
         return ResponseJwtTokenDto(
             accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
+        )
+    }
+
+    override fun findPageUsers(userSearchDto: RequestUserSearchDto): ResponseUserPageDto {
+        val page = userRepository.findPageUsers(userSearchDto)
+
+        val responsePageDto = ResponsePageDto(
+            page.totalPages,
+            page.totalElements
+        )
+
+        val list = page.content.map { userMapper.toDto(it) }
+
+        return ResponseUserPageDto(
+            page = responsePageDto,
+            list = list
         )
     }
 }

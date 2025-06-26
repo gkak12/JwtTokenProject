@@ -36,7 +36,7 @@ class OAuth2AuthenticationSuccessHandler(
         findOrCreateUser(email, name)
         redisComponent.setRefreshToken(email+JwtEnums.TOKEN_KEY.value, refreshToken)
 
-        var encodedEmail = Base64.getEncoder().encodeToString(email.toByteArray())
+        val encodedEmail = Base64.getEncoder().encodeToString(email.toByteArray())
         response.sendRedirect("/oauth2/me?id=$encodedEmail")
     }
 
