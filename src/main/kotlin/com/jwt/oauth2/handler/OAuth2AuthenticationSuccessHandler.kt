@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 import org.springframework.stereotype.Component
+import java.util.Base64
 
 @Component
 class OAuth2AuthenticationSuccessHandler(
@@ -35,7 +36,8 @@ class OAuth2AuthenticationSuccessHandler(
         findOrCreateUser(email, name)
         redisComponent.setRefreshToken(email+JwtEnums.TOKEN_KEY.value, refreshToken)
 
-        response.sendRedirect("/oauth2/me?id=$email")
+        var encodedEmail = Base64.getEncoder().encodeToString(email.toByteArray())
+        response.sendRedirect("/oauth2/me?id=$encodedEmail")
     }
 
     @Transactional
