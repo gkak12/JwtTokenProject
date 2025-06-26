@@ -1,7 +1,6 @@
 package com.jwt.user.api
 
 import com.jwt.comm.enums.JwtEnums
-import com.jwt.comm.util.JwtUtil
 import com.jwt.user.domain.request.RequestUserCreateDto
 import com.jwt.user.domain.request.RequestUserLoginDto
 import com.jwt.user.domain.request.RequestUserSearchDto
@@ -11,7 +10,6 @@ import com.jwt.user.domain.response.ResponseUserDto
 import com.jwt.user.domain.response.ResponseUserPageDto
 import com.jwt.user.service.UserService
 import jakarta.validation.Valid
-import org.slf4j.LoggerFactory
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,10 +19,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/users")
 class UsersController(
-    private val userService: UserService,
-    private val jwtUtil: JwtUtil
+    private val userService: UserService
 ) {
-    private val log = LoggerFactory.getLogger(javaClass)
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/signup")

@@ -31,12 +31,15 @@ class UserServiceImpl(
     private val redisUtil: RedisUtil
 ) : UserService {
 
-    private val log = LoggerFactory.getLogger(com.jwt.user.service.impl.UserServiceImpl::class.java)
+    private val log = LoggerFactory.getLogger(UserServiceImpl::class.java)
 
     @Transactional
     override fun createUser(userCreateDto: RequestUserCreateDto) {
         if (userRepository.findById(userCreateDto.id).isPresent) {
-            throw IllegalStateException("아이디가 중복됩니다.")
+            val msg = "${userCreateDto.id}: 아이디가 중복됩니다."
+
+            log.error(msg)
+            throw IllegalStateException(msg)
         }
 
         val encodedPassword = bCryptPasswordEncoder.encode(userCreateDto.password)
@@ -53,11 +56,17 @@ class UserServiceImpl(
         val userPassword = userLoginDto.password
 
         val user: User = userRepository.findById(userId).orElseThrow {
-            NoSuchElementException("로그인 계정이 존재하지 않습니다.")
+            val msg = "$userId: 로그인 계정이 존재하지 않습니다."
+
+            log.error(msg)
+            NoSuchElementException(msg)
         }
 
         if (!bCryptPasswordEncoder.matches(userPassword, user.password)) {
-            throw BadCredentialsException("입력한 비밀번호가 일치하지 않습니다.")
+            val msg = "$userId: 로그인 시도한 계정 비밀번호가 일치하지 않습니다."
+            
+            log.error(msg)
+            throw BadCredentialsException(msg)
         }
 
         val accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
@@ -72,7 +81,10 @@ class UserServiceImpl(
 
     override fun findByUserId(userId: String): ResponseUserDto {
         val user = userRepository.findById(userId).orElseThrow {
-            NoSuchElementException("조회 대상 계정이 존재하지 않습니다.")
+            val msg = "$userId: 조회 대상 계정이 존재하지 않습니다."
+
+            log.error(msg)
+            NoSuchElementException(msg)
         }
 
         return userMapper.toDto(user)
@@ -82,7 +94,10 @@ class UserServiceImpl(
     override fun updateUser(userDto: RequestUserUpdateDto) {
         val userId = SecurityContextHolder.getContext().authentication.name
         val user = userRepository.findById(userId).orElseThrow {
-            NoSuchElementException("수정 대상 계정이 존재하지 않습니다.")
+            val msg = "$userId: 수정 대상 계정이 존재하지 않습니다."
+
+            log.error(msg)
+            NoSuchElementException(msg)
         }
 
         user.password = bCryptPasswordEncoder.encode(userDto.password)
@@ -94,7 +109,10 @@ class UserServiceImpl(
     @Transactional
     override fun deleteUser(userId: String) {
         val user = userRepository.findById(userId).orElseThrow {
-            NoSuchElementException("삭제 대상 계정이 존재하지 않습니다.")
+            val msg = "$userId: 삭제 대상 계정이 존재하지 않습니다."
+
+            log.error(msg)
+            NoSuchElementException(msg)
         }
 
         userRepository.delete(user)
