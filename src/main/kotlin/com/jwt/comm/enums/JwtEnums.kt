@@ -1,4 +1,4 @@
-package com.jwt.comm
+package com.jwt.comm.enums
 
 enum class JwtEnums (val value: String, val msg: String) {
     BEARER("Bearer ", "HTTP 헤더 JWT 키"),

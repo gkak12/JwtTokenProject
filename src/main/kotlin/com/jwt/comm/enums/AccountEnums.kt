@@ -1,4 +1,4 @@
-package com.jwt.comm
+package com.jwt.comm.enums
 
 enum class AccountEnums (val value: String, val msg: String) {
     REDIS_INFO(":REDIS_INFO", "REDIS 계정 키"),

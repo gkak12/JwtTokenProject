@@ -1,4 +1,4 @@
-package com.jwt.comm
+package com.jwt.comm.exception
 
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus

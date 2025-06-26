@@ -1,4 +1,4 @@
-package com.jwt.comm
+package com.jwt.comm.util
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.RedisTemplate
@@ -6,8 +6,9 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component("redisComponent")
-class RedisComponent (
+class RedisUtil (
     private val redisTemplate: RedisTemplate<String, String>,
+
     @Value("\${jwt.refresh-token-expiration}")
     private val validityRefreshTime: Long
 ){

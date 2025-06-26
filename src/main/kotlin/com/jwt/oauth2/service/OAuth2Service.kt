@@ -1,9 +1,9 @@
 package com.jwt.oauth2.service
 
-import com.jwt.comm.AccountEnums
-import com.jwt.comm.JwtEnums
-import com.jwt.comm.JwtUtil
-import com.jwt.comm.RedisComponent
+import com.jwt.comm.enums.AccountEnums
+import com.jwt.comm.enums.JwtEnums
+import com.jwt.comm.util.JwtUtil
+import com.jwt.comm.util.RedisUtil
 import com.jwt.user.domain.entity.User
 import com.jwt.user.domain.response.ResponseJwtTokenDto
 import com.jwt.user.repository.UserRepository
@@ -15,7 +15,7 @@ import java.util.Base64
 class OAuth2Service (
     private val jwtUtil: JwtUtil,
     private val userRepository: UserRepository,
-    private val redisComponent: RedisComponent
+    private val redisUtil: RedisUtil
 ){
     fun createToken(encodedId: String): ResponseJwtTokenDto{
         val id = String(Base64.getDecoder().decode(encodedId))
@@ -27,7 +27,7 @@ class OAuth2Service (
     @Transactional
     fun createUserInfo(email: String, name: String){
         val refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, email)
-        redisComponent.setRefreshToken(email+JwtEnums.TOKEN_KEY.value, refreshToken)
+        redisUtil.setRefreshToken(email+ JwtEnums.TOKEN_KEY.value, refreshToken)
 
         userRepository.findById(email).orElseGet{
             userRepository.save(

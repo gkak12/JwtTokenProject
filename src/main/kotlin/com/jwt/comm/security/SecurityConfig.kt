@@ -1,8 +1,7 @@
-package com.jwt.config
+package com.jwt.comm.security
 
-import com.jwt.comm.JwtAuthenticationFilter
-import com.jwt.comm.JwtUtil
-import com.jwt.comm.RedisComponent
+import com.jwt.comm.util.JwtUtil
+import com.jwt.comm.util.RedisUtil
 import com.jwt.oauth2.service.CustomOAuth2UserService
 import com.jwt.oauth2.handler.OAuth2AuthenticationFailureHandler
 import com.jwt.oauth2.handler.OAuth2AuthenticationSuccessHandler
@@ -31,8 +30,8 @@ class SecurityConfig(
     }
 
     @Bean
-    fun jwtAuthenticationFilter(jwtUtil: JwtUtil, redisComponent: RedisComponent): JwtAuthenticationFilter {
-        return JwtAuthenticationFilter(jwtUtil, redisComponent)
+    fun jwtAuthenticationFilter(jwtUtil: JwtUtil, redisUtil: RedisUtil): JwtAuthenticationFilter {
+        return JwtAuthenticationFilter(jwtUtil, redisUtil)
     }
 
     @Bean

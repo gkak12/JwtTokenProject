@@ -1,4 +1,4 @@
-package com.jwt.comm
+package com.jwt.comm.util
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts

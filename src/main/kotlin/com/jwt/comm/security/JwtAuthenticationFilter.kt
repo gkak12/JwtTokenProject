@@ -1,5 +1,8 @@
-package com.jwt.comm
+package com.jwt.comm.security
 
+import com.jwt.comm.util.JwtUtil
+import com.jwt.comm.util.RedisUtil
+import com.jwt.comm.enums.JwtEnums
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
@@ -13,7 +16,7 @@ import java.io.IOException
 
 class JwtAuthenticationFilter(
     private val jwtUtil: JwtUtil,
-    private val redisComponent: RedisComponent
+    private val redisUtil: RedisUtil
 ) : OncePerRequestFilter() {
 
     private val log = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
@@ -36,8 +39,8 @@ class JwtAuthenticationFilter(
             val userId = jwtUtil.getUsername(accessToken ?: throw IllegalArgumentException("Token is missing"))
 
             // 삭제된 계정인지 확인
-            val userTokenKey = userId+JwtEnums.TOKEN_KEY.value
-            requireNotNull(redisComponent.getRefreshToken(userTokenKey)){
+            val userTokenKey = userId+ JwtEnums.TOKEN_KEY.value
+            requireNotNull(redisUtil.getRefreshToken(userTokenKey)){
                 "삭제된 계정입니다."
             }
 

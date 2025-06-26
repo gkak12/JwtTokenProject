@@ -1,9 +1,8 @@
 package com.jwt.user.service.impl
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.jwt.comm.JwtEnums
-import com.jwt.comm.JwtUtil
-import com.jwt.comm.RedisComponent
+import com.jwt.comm.enums.JwtEnums
+import com.jwt.comm.util.JwtUtil
+import com.jwt.comm.util.RedisUtil
 import com.jwt.user.domain.entity.User
 import com.jwt.user.domain.mapper.UserMapper
 import com.jwt.user.domain.request.RequestUserCreateDto
@@ -29,8 +28,7 @@ class UserServiceImpl(
     private val userMapper: UserMapper,
     private val jwtUtil: JwtUtil,
     private val bCryptPasswordEncoder: BCryptPasswordEncoder,
-    private val redisComponent: RedisComponent,
-    private val objectMapper: ObjectMapper
+    private val redisUtil: RedisUtil
 ) : UserService {
 
     private val log = LoggerFactory.getLogger(com.jwt.user.service.impl.UserServiceImpl::class.java)
@@ -65,7 +63,7 @@ class UserServiceImpl(
         val accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
         val refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
 
-        redisComponent.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
+        redisUtil.setRefreshToken(userId+ JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
 
         return ResponseJwtTokenDto(
             accessToken = accessToken
@@ -105,14 +103,14 @@ class UserServiceImpl(
     @Transactional
     override fun refreshToken(refreshToken: String): ResponseJwtTokenDto {
         val userId = SecurityContextHolder.getContext().authentication.name
-        val userTokenKey = userId+JwtEnums.TOKEN_KEY.value
-        val storedRefreshToken = requireNotNull(redisComponent.getRefreshToken(userTokenKey)){
+        val userTokenKey = userId+ JwtEnums.TOKEN_KEY.value
+        val storedRefreshToken = requireNotNull(redisUtil.getRefreshToken(userTokenKey)){
             "로그인이 만료되었습니다. 다시 로그인하세요."
         }
 
         // refresh 토큰 비교
         if(storedRefreshToken != refreshToken) {
-            redisComponent.setRefreshToken(userTokenKey, "") // 토큰 무효화
+            redisUtil.setRefreshToken(userTokenKey, "") // 토큰 무효화
             throw SecurityException("비정상적인 접근입니다. 다시 로그인하세요.")
         }
 
@@ -123,7 +121,7 @@ class UserServiceImpl(
 
         // refresh 토큰 Redis 저장
         val newRefreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
-        redisComponent.setRefreshToken(userTokenKey, newRefreshToken)
+        redisUtil.setRefreshToken(userTokenKey, newRefreshToken)
 
         return ResponseJwtTokenDto(
             accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)

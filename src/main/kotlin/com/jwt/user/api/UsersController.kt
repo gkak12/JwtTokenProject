@@ -1,7 +1,7 @@
 package com.jwt.user.api
 
-import com.jwt.comm.JwtEnums
-import com.jwt.comm.JwtUtil
+import com.jwt.comm.enums.JwtEnums
+import com.jwt.comm.util.JwtUtil
 import com.jwt.user.domain.request.RequestUserCreateDto
 import com.jwt.user.domain.request.RequestUserLoginDto
 import com.jwt.user.domain.request.RequestUserSearchDto
