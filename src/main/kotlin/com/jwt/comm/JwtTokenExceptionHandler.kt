@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import java.util.*
 
 @RestControllerAdvice
-class ExampleExceptionHandler {
+class JwtTokenExceptionHandler {
 
-    private val log = LoggerFactory.getLogger(ExampleExceptionHandler::class.java)
+    private val log = LoggerFactory.getLogger(JwtTokenExceptionHandler::class.java)
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<String> {
@@ -57,7 +57,7 @@ class ExampleExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGeneralException(ex: Exception): ResponseEntity<String> {
-        val errorMessage = "서버에 오류가 발생했습니다."
+        val errorMessage = ex.message ?: "서버에 오류가 발생했습니다."
         log.info(errorMessage)
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage)
