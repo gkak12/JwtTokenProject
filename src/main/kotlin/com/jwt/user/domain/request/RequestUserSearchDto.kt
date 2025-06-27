@@ -5,9 +5,4 @@ class RequestUserSearchDto(
     var name: String? = null,
     pageNumber: Int? = null,
     pageSize: Int? = null
-) : RequestPageDto(){
-    init {
-        this.pageNumber = pageNumber
-        this.pageSize = pageSize
-    }
-}
+) : RequestPageDto(pageNumber, pageSize)
