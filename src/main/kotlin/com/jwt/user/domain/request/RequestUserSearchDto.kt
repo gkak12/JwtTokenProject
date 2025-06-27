@@ -1,6 +1,13 @@
 package com.jwt.user.domain.request
 
-data class RequestUserSearchDto(
-    val id: String? = null,
-    val name: String? = null,
-) : RequestPageDto()
+class RequestUserSearchDto(
+    var id: String? = null,
+    var name: String? = null,
+    pageNumber: Int? = null,
+    pageSize: Int? = null
+) : RequestPageDto(){
+    init {
+        this.pageNumber = pageNumber
+        this.pageSize = pageSize
+    }
+}
