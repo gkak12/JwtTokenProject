@@ -1,8 +1,8 @@
 package com.jwt.user.domain.request
 
 class RequestUserSearchDto(
-    var id: String? = null,
-    var name: String? = null,
-    pageNumber: Int? = null,
-    pageSize: Int? = null
+    pageNumber: Int,
+    pageSize: Int,
+    var id: String = "",
+    var name: String = ""
 ) : RequestPageDto(pageNumber, pageSize)

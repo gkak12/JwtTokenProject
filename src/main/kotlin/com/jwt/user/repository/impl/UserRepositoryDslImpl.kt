@@ -29,8 +29,8 @@ class UserRepositoryDslImpl(
     }
 
     override fun findPageUsers(userSearchDto: RequestUserSearchDto): Page<User> {
-        val pageNumber = userSearchDto.getPageNumber()
-        val pageSize = userSearchDto.pageSize ?: 10
+        val pageNumber = userSearchDto.pageNum
+        val pageSize = userSearchDto.pageSize
 
         val pageable = PageRequest.of(
             pageNumber,

@@ -1,10 +1,9 @@
 package com.jwt.user.domain.request
 
 open class RequestPageDto(
-    var pageNumber: Int? = null,
-    var pageSize: Int? = null
+    var pageNumber: Int = 1,
+    var pageSize: Int = 10
 ){
-    fun getPageNumber(): Int{
-        return (pageNumber ?: 1) - 1
-    }
+    val pageNum: Int
+        get() = pageNumber-1
 }

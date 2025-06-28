@@ -71,10 +71,10 @@ class UserRepositoryDslImplTest {
     fun `findPageUsers 테스트`(){
         // Given
         val userSearchDto = RequestUserSearchDto(
-            id = "test1",
-            name = "test1",
             pageNumber = 1,
-            pageSize = 5
+            pageSize = 5,
+            name = "test1",
+            id = "test1"
         )
 
         // When
