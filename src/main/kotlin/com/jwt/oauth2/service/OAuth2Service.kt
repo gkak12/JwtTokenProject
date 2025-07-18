@@ -5,7 +5,7 @@ import com.jwt.comm.enums.JwtEnums
 import com.jwt.comm.util.JwtUtil
 import com.jwt.comm.util.RedisUtil
 import com.jwt.user.domain.entity.User
-import com.jwt.user.domain.response.ResponseJwtTokenDto
+import com.jwt.user.domain.response.ResponseLoginDto
 import com.jwt.user.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -17,11 +17,11 @@ class OAuth2Service (
     private val userRepository: UserRepository,
     private val redisUtil: RedisUtil
 ){
-    fun createToken(encodedId: String): ResponseJwtTokenDto{
+    fun createToken(encodedId: String): ResponseLoginDto{
         val id = String(Base64.getDecoder().decode(encodedId))
         val accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, id)
 
-        return ResponseJwtTokenDto(accessToken)
+        return ResponseLoginDto(accessToken)
     }
 
     @Transactional

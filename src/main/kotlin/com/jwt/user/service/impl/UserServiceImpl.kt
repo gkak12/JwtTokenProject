@@ -9,14 +9,17 @@ import com.jwt.user.domain.request.RequestUserCreateDto
 import com.jwt.user.domain.request.RequestUserLoginDto
 import com.jwt.user.domain.request.RequestUserSearchDto
 import com.jwt.user.domain.request.RequestUserUpdateDto
-import com.jwt.user.domain.response.ResponseJwtTokenDto
+import com.jwt.user.domain.response.ResponseLoginDto
 import com.jwt.user.domain.response.ResponsePageDto
 import com.jwt.user.domain.response.ResponseUserDto
 import com.jwt.user.domain.response.ResponseUserPageDto
 import com.jwt.user.repository.UserRepository
 import com.jwt.user.service.UserService
+import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -24,6 +27,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserServiceImpl(
+    @Value("\${jwt.access-token-expiration}")
+    private val validityAccessTime: Long,
+    @Value("\${jwt.refresh-token-expiration}")
+    private val validityRefreshTime: Long,
     private val userRepository: UserRepository,
     private val userMapper: UserMapper,
     private val jwtUtil: JwtUtil,
@@ -51,7 +58,7 @@ class UserServiceImpl(
     }
 
     @Transactional
-    override fun loginUser(userLoginDto: RequestUserLoginDto): ResponseJwtTokenDto {
+    override fun loginUser(userLoginDto: RequestUserLoginDto, response: HttpServletResponse): ResponseLoginDto {
         val userId = userLoginDto.id
         val userPassword = userLoginDto.password
 
@@ -72,10 +79,28 @@ class UserServiceImpl(
         val accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
         val refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
 
-        redisUtil.setRefreshToken(userId+ JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
+        log.info("accessToken: $accessToken")
+        log.info("refreshToken: $refreshToken")
 
-        return ResponseJwtTokenDto(
-            accessToken = accessToken
+        redisUtil.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
+
+        val accessCookie = Cookie("access_token", accessToken)
+        accessCookie.isHttpOnly = true
+        accessCookie.secure = true
+        accessCookie.maxAge = (validityAccessTime/1000).toInt()
+        accessCookie.path = "/"
+
+        val refreshCookie = Cookie("access_token", refreshToken)
+        refreshCookie.isHttpOnly = true
+        refreshCookie.secure = true
+        refreshCookie.maxAge = (validityRefreshTime/1000).toInt()
+        refreshCookie.path = "/"
+
+        response.addCookie(accessCookie)
+        response.addCookie(refreshCookie)
+
+        return ResponseLoginDto(
+            msg = "Login is successed."
         )
     }
 
@@ -119,7 +144,7 @@ class UserServiceImpl(
     }
 
     @Transactional
-    override fun refreshToken(refreshToken: String): ResponseJwtTokenDto {
+    override fun refreshToken(refreshToken: String, response: HttpServletResponse): ResponseLoginDto {
         val userId = SecurityContextHolder.getContext().authentication.name
         val userTokenKey = userId+ JwtEnums.TOKEN_KEY.value
         val storedRefreshToken = requireNotNull(redisUtil.getRefreshToken(userTokenKey)){
@@ -137,12 +162,31 @@ class UserServiceImpl(
             throw IllegalStateException("유효하지 않은 리프레시 토큰입니다.")
         }
 
-        // refresh 토큰 Redis 저장
+        val newAccessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
         val newRefreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
-        redisUtil.setRefreshToken(userTokenKey, newRefreshToken)
 
-        return ResponseJwtTokenDto(
-            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
+        log.info("newAccessToken: $newAccessToken")
+        log.info("newRefreshToken: $newRefreshToken")
+
+        redisUtil.setRefreshToken(userTokenKey, newRefreshToken)    // 새로운 refresh 토큰 Redis 저장
+
+        val accessCookie = Cookie("access_token", newAccessToken)
+        accessCookie.isHttpOnly = true
+        accessCookie.secure = true
+        accessCookie.maxAge = (validityAccessTime/1000).toInt()
+        accessCookie.path = "/"
+
+        val refreshCookie = Cookie("access_token", newRefreshToken)
+        refreshCookie.isHttpOnly = true
+        refreshCookie.secure = true
+        refreshCookie.maxAge = (validityRefreshTime/1000).toInt()
+        refreshCookie.path = "/"
+
+        response.addCookie(accessCookie)
+        response.addCookie(refreshCookie)
+
+        return ResponseLoginDto(
+            msg = "JWT Token is issued."
         )
     }
 
