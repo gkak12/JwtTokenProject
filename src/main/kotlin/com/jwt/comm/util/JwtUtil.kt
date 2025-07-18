@@ -1,9 +1,13 @@
 package com.jwt.comm.util
 
+import com.jwt.comm.enums.JwtEnums
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
+import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.*
@@ -14,25 +18,46 @@ class JwtUtil(
     @Value("\${jwt.access-token-expiration}")
     private val validityAccessTime: Long,
     @Value("\${jwt.refresh-token-expiration}")
-    private val validityRefreshTime: Long
+    private val validityRefreshTime: Long,
+    private val redisUtil: RedisUtil
 ){
 
+    private val log = LoggerFactory.getLogger(JwtUtil::class.java)
     private val secretKey: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
 
-    // Access/Refresh Token 생성
-    fun createToken(type:String, userId: String): String {
+    // Access/Refresh Token 생성 및 쿠키 적용
+    fun createToken(type:String, userId: String, response: HttpServletResponse) {
         val claims: Claims = Jwts.claims().setSubject(userId) // Token에 사용자 아이디 추가
         val now = Date()
 
         // 토큰 타입에 따라 만료 시간 설정
-        val expirationTime = if (type == "access") Date(now.time + validityAccessTime) else Date(now.time + validityRefreshTime)
+        val validityTime = if(type == JwtEnums.ACCESS_TYPE.value) validityAccessTime else validityRefreshTime
+        val expirationTime = Date(now.time + validityTime)
 
-        return Jwts.builder()
+        val token = Jwts.builder()
             .setClaims(claims)
             .setIssuedAt(now)
             .setExpiration(expirationTime)
             .signWith(secretKey, SignatureAlgorithm.HS256)
             .compact()
+
+        val logMsg = if(type == JwtEnums.ACCESS_TYPE.value) "access_token: $token" else "refresh_token: $token"
+        log.info(logMsg)
+
+        if(type == JwtEnums.REFRESH_TYPE.value){    // refresh 토큰 Redis 저장
+            redisUtil.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, token)
+        }
+
+        val name = if(type == JwtEnums.ACCESS_TYPE.value) "access_token" else "refresh_token"
+
+        val cookie = Cookie(name, token).apply {
+            isHttpOnly = true
+            secure = true
+            maxAge = (validityTime / 1000).toInt()
+            path = "/"
+        }
+
+        response.addCookie(cookie)
     }
 
     // Token에서 사용자 아이디 추출
