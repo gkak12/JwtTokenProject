@@ -20,12 +20,12 @@ class JwtUtil(
     private val secretKey: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
 
     // Access/Refresh Token 생성
-    fun createToken(flag:String, userId: String): String {
+    fun createToken(type:String, userId: String): String {
         val claims: Claims = Jwts.claims().setSubject(userId) // Token에 사용자 아이디 추가
         val now = Date()
 
         // 토큰 타입에 따라 만료 시간 설정
-        val expirationTime = if (flag == "access") Date(now.time + validityAccessTime) else Date(now.time + validityRefreshTime)
+        val expirationTime = if (type == "access") Date(now.time + validityAccessTime) else Date(now.time + validityRefreshTime)
 
         return Jwts.builder()
             .setClaims(claims)

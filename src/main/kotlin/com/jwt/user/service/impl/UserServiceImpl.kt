@@ -90,7 +90,7 @@ class UserServiceImpl(
         accessCookie.maxAge = (validityAccessTime/1000).toInt()
         accessCookie.path = "/"
 
-        val refreshCookie = Cookie("access_token", refreshToken)
+        val refreshCookie = Cookie("refresh_token", refreshToken)
         refreshCookie.isHttpOnly = true
         refreshCookie.secure = true
         refreshCookie.maxAge = (validityRefreshTime/1000).toInt()
@@ -176,7 +176,7 @@ class UserServiceImpl(
         accessCookie.maxAge = (validityAccessTime/1000).toInt()
         accessCookie.path = "/"
 
-        val refreshCookie = Cookie("access_token", newRefreshToken)
+        val refreshCookie = Cookie("refresh_token", newRefreshToken)
         refreshCookie.isHttpOnly = true
         refreshCookie.secure = true
         refreshCookie.maxAge = (validityRefreshTime/1000).toInt()
