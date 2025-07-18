@@ -15,11 +15,9 @@ import com.jwt.user.domain.response.ResponseUserDto
 import com.jwt.user.domain.response.ResponseUserPageDto
 import com.jwt.user.repository.UserRepository
 import com.jwt.user.service.UserService
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -27,10 +25,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserServiceImpl(
-    @Value("\${jwt.access-token-expiration}")
-    private val validityAccessTime: Long,
-    @Value("\${jwt.refresh-token-expiration}")
-    private val validityRefreshTime: Long,
     private val userRepository: UserRepository,
     private val userMapper: UserMapper,
     private val jwtUtil: JwtUtil,

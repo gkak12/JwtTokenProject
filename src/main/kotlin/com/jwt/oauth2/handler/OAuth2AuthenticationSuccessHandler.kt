@@ -23,7 +23,7 @@ class OAuth2AuthenticationSuccessHandler(
         val email = principal.getAttribute<String>("email")
         val name = principal.getAttribute<String>("name")
 
-        oAuth2Service.createUserInfo(email, name)
+        oAuth2Service.createUserInfo(email, name, response)
 
         val encodedEmail = Base64.getEncoder().encodeToString(email.toByteArray())
         response.sendRedirect("/oauth2/me?id=$encodedEmail")
