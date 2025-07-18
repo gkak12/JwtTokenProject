@@ -76,31 +76,11 @@ class UserServiceImpl(
             throw BadCredentialsException(msg)
         }
 
-        val accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
-        val refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
-
-        log.info("accessToken: $accessToken")
-        log.info("refreshToken: $refreshToken")
-
-        redisUtil.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, refreshToken)  // refresh 토큰 Redis 저장
-
-        val accessCookie = Cookie("access_token", accessToken)
-        accessCookie.isHttpOnly = true
-        accessCookie.secure = true
-        accessCookie.maxAge = (validityAccessTime/1000).toInt()
-        accessCookie.path = "/"
-
-        val refreshCookie = Cookie("refresh_token", refreshToken)
-        refreshCookie.isHttpOnly = true
-        refreshCookie.secure = true
-        refreshCookie.maxAge = (validityRefreshTime/1000).toInt()
-        refreshCookie.path = "/"
-
-        response.addCookie(accessCookie)
-        response.addCookie(refreshCookie)
+        jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId, response)
+        jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId, response)
 
         return ResponseLoginDto(
-            msg = "Login is successed."
+            msg = "$userId: 로그인 성공"
         )
     }
 
@@ -162,31 +142,11 @@ class UserServiceImpl(
             throw IllegalStateException("유효하지 않은 리프레시 토큰입니다.")
         }
 
-        val newAccessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId)
-        val newRefreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId)
-
-        log.info("newAccessToken: $newAccessToken")
-        log.info("newRefreshToken: $newRefreshToken")
-
-        redisUtil.setRefreshToken(userTokenKey, newRefreshToken)    // 새로운 refresh 토큰 Redis 저장
-
-        val accessCookie = Cookie("access_token", newAccessToken)
-        accessCookie.isHttpOnly = true
-        accessCookie.secure = true
-        accessCookie.maxAge = (validityAccessTime/1000).toInt()
-        accessCookie.path = "/"
-
-        val refreshCookie = Cookie("refresh_token", newRefreshToken)
-        refreshCookie.isHttpOnly = true
-        refreshCookie.secure = true
-        refreshCookie.maxAge = (validityRefreshTime/1000).toInt()
-        refreshCookie.path = "/"
-
-        response.addCookie(accessCookie)
-        response.addCookie(refreshCookie)
+        jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId, response)
+        jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId, response)
 
         return ResponseLoginDto(
-            msg = "JWT Token is issued."
+            msg = "JWT 토큰 재발급 되었습니다."
         )
     }
 
