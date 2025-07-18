@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service
 class CustomOAuth2UserService: DefaultOAuth2UserService() {
 
     override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
+        // server_ip:port/oauth2/authorization/naver
         val oAuth2User = super.loadUser(userRequest)
         val attributes = oAuth2User.attributes["response"] as? Map<*, *> ?: throw OAuth2AuthenticationException("Response not found")
 
