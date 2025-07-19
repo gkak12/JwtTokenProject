@@ -39,7 +39,7 @@ class JwtAuthenticationFilter(
             val userId = jwtUtil.getUsername(accessToken ?: throw IllegalArgumentException("Token is missing"))
 
             // 삭제된 계정인지 확인
-            val userTokenKey = userId+ JwtEnums.TOKEN_KEY.value
+            val userTokenKey = userId+JwtEnums.TOKEN_KEY.value
             requireNotNull(redisUtil.getRefreshToken(userTokenKey)){
                 "삭제된 계정입니다."
             }
