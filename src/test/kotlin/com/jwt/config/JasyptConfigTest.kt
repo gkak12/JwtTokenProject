@@ -3,6 +3,7 @@ package com.jwt.config
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import java.util.Base64
 
 class JasyptConfigTest {
 
@@ -44,5 +45,21 @@ class JasyptConfigTest {
 
         log.info("username: {}", jasyptDecoding(username))
         log.info("password: {}", jasyptDecoding(password))
+    }
+
+    @Test
+    fun `Base64 인코딩 테스트`(){
+        val email = "test_user@email.com"
+        val encodedEmail = Base64.getEncoder().encodeToString(email.toByteArray())
+
+        log.info("encodedEmail: {}", encodedEmail)
+    }
+
+    @Test
+    fun `Base64 디코딩 테스트`(){
+        val encodedEmail = "dGVzdF91c2VyQGVtYWlsLmNvbQ=="
+        val decodedEmail = String(Base64.getDecoder().decode(encodedEmail))
+
+        log.info("decodedEmail: {}", decodedEmail)
     }
 }
