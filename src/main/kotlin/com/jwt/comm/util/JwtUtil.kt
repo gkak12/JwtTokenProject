@@ -30,10 +30,11 @@ class JwtUtil(
         val claims: Claims = Jwts.claims().setSubject(userId) // Token에 사용자 아이디 추가
         val now = Date()
 
-        // 토큰 타입에 따라 만료 시간 설정
+        // 토큰 타입에 따른 만료 시간 설정
         val validityTime = if(type == JwtEnums.ACCESS_TYPE.value) validityAccessTime else validityRefreshTime
         val expirationTime = Date(now.time + validityTime)
 
+        // 토큰 생성
         val token = Jwts.builder()
             .setClaims(claims)
             .setIssuedAt(now)
@@ -48,6 +49,11 @@ class JwtUtil(
             redisUtil.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, token)
         }
 
+        createCookie(type, token, validityTime, response)   // JWT 토큰 쿠키 저장 메서드 호출
+    }
+
+    // JWT 토큰을 쿠키에 저장
+    private fun createCookie(type: String, token: String, validityTime: Long, response: HttpServletResponse) {
         val name = if(type == JwtEnums.ACCESS_TYPE.value) "access_token" else "refresh_token"
 
         val cookie = Cookie(name, token).apply {
