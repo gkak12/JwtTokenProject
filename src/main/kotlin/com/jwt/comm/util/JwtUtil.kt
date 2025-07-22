@@ -24,7 +24,7 @@ class JwtUtil(
     private val secretKey: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
 
     // Access/Refresh Token 생성
-    fun createToken(type:String, userId: String) {
+    fun createToken(type:String, userId: String): String {
         val claims: Claims = Jwts.claims().setSubject(userId) // Token에 사용자 아이디 추가
         val now = Date()
 
@@ -46,6 +46,8 @@ class JwtUtil(
         if(type == JwtEnums.REFRESH_TYPE.value){    // refresh 토큰 Redis 저장
             redisUtil.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, token)
         }
+
+        return token
     }
 
     // Token에서 사용자 아이디 추출

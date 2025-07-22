@@ -5,11 +5,10 @@ import com.jwt.user.domain.request.RequestUserCreateDto
 import com.jwt.user.domain.request.RequestUserLoginDto
 import com.jwt.user.domain.request.RequestUserSearchDto
 import com.jwt.user.domain.request.RequestUserUpdateDto
-import com.jwt.user.domain.response.ResponseLoginDto
+import com.jwt.user.domain.response.ResponseJwtDto
 import com.jwt.user.domain.response.ResponseUserDto
 import com.jwt.user.domain.response.ResponseUserPageDto
 import com.jwt.user.service.UserService
-import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.HttpStatus
@@ -32,8 +31,8 @@ class UsersController(
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/login")
-    fun login(@RequestBody @Valid userLoginDto: RequestUserLoginDto, response: HttpServletResponse): ResponseEntity<ResponseLoginDto> {
-        return ResponseEntity.ok(userService.loginUser(userLoginDto, response))
+    fun login(@RequestBody @Valid userLoginDto: RequestUserLoginDto): ResponseEntity<ResponseJwtDto> {
+        return ResponseEntity.ok(userService.loginUser(userLoginDto))
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -60,9 +59,9 @@ class UsersController(
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/refreshToken")
-    fun refreshToken(@RequestHeader("Authorization") token: String, response: HttpServletResponse): ResponseEntity<ResponseLoginDto> {
+    fun refreshToken(@RequestHeader("Authorization") token: String): ResponseEntity<ResponseJwtDto> {
         val refreshToken = token.removePrefix(JwtEnums.BEARER.value)
-        val tokens = userService.refreshToken(refreshToken, response)
+        val tokens = userService.refreshToken(refreshToken)
         return ResponseEntity.ok(tokens)
     }
 

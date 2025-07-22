@@ -1,7 +1,7 @@
 package com.jwt.oauth2.api
 
 import com.jwt.oauth2.service.OAuth2Service
-import com.jwt.user.domain.response.ResponseLoginDto
+import com.jwt.user.domain.response.ResponseJwtDto
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,7 +16,7 @@ class OAuth2Controller (
 ){
 
     @GetMapping("/me")
-    fun findOAuth2Me(@RequestParam @Valid id: String): ResponseEntity<ResponseLoginDto> {
+    fun findOAuth2Me(@RequestParam @Valid id: String): ResponseEntity<ResponseJwtDto> {
         return ResponseEntity.ok(oauth2Service.createToken(id))
     }
 }

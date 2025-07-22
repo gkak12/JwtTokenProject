@@ -9,13 +9,12 @@ import com.jwt.user.domain.request.RequestUserCreateDto
 import com.jwt.user.domain.request.RequestUserLoginDto
 import com.jwt.user.domain.request.RequestUserSearchDto
 import com.jwt.user.domain.request.RequestUserUpdateDto
-import com.jwt.user.domain.response.ResponseLoginDto
+import com.jwt.user.domain.response.ResponseJwtDto
 import com.jwt.user.domain.response.ResponsePageDto
 import com.jwt.user.domain.response.ResponseUserDto
 import com.jwt.user.domain.response.ResponseUserPageDto
 import com.jwt.user.repository.UserRepository
 import com.jwt.user.service.UserService
-import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.BadCredentialsException
@@ -52,7 +51,7 @@ class UserServiceImpl(
     }
 
     @Transactional
-    override fun loginUser(userLoginDto: RequestUserLoginDto, response: HttpServletResponse): ResponseLoginDto {
+    override fun loginUser(userLoginDto: RequestUserLoginDto): ResponseJwtDto {
         val userId = userLoginDto.id
         val userPassword = userLoginDto.password
 
@@ -70,10 +69,9 @@ class UserServiceImpl(
             throw BadCredentialsException(msg)
         }
 
-        jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId, response)
-        jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId, response)
-
-        return ResponseLoginDto(
+        return ResponseJwtDto(
+            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId),
+            refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId),
             msg = "$userId: 로그인 성공"
         )
     }
@@ -118,7 +116,7 @@ class UserServiceImpl(
     }
 
     @Transactional
-    override fun refreshToken(refreshToken: String, response: HttpServletResponse): ResponseLoginDto {
+    override fun refreshToken(refreshToken: String): ResponseJwtDto {
         val userId = SecurityContextHolder.getContext().authentication.name
         val userTokenKey = userId+ JwtEnums.TOKEN_KEY.value
         val storedRefreshToken = requireNotNull(redisUtil.getRefreshToken(userTokenKey)){
@@ -136,10 +134,9 @@ class UserServiceImpl(
             throw IllegalStateException("유효하지 않은 리프레시 토큰입니다.")
         }
 
-        jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId, response)
-        jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId, response)
-
-        return ResponseLoginDto(
+        return ResponseJwtDto(
+            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId),
+            refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId),
             msg = "JWT 토큰 재발급 되었습니다."
         )
     }
