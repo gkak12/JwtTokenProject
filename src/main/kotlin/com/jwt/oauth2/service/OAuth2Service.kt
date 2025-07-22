@@ -6,7 +6,6 @@ import com.jwt.comm.util.JwtUtil
 import com.jwt.user.domain.entity.User
 import com.jwt.user.domain.response.ResponseLoginDto
 import com.jwt.user.repository.UserRepository
-import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.util.*
@@ -16,18 +15,18 @@ class OAuth2Service (
     private val jwtUtil: JwtUtil,
     private val userRepository: UserRepository
 ){
-    fun createToken(encodedId: String, response: HttpServletResponse): ResponseLoginDto{
+    fun createToken(encodedId: String): ResponseLoginDto{
         val id = String(Base64.getDecoder().decode(encodedId))
         userRepository.findById(id) ?: throw NoSuchElementException("등록되지 않은 계정입니다.")
 
-        jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, id, response)
-        jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, id, response)
+        jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, id)
+        jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, id)
 
         return ResponseLoginDto("$id: OAuth2 로그인 성공했습니다.")
     }
 
     @Transactional
-    fun createUserInfo(email: String, name: String, response: HttpServletResponse){
+    fun createUserInfo(email: String, name: String){
         userRepository.findById(email).orElseGet{
             userRepository.save(
                 User(email, "", name, AccountEnums.ROLE_USER.value)
