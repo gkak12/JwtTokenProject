@@ -5,8 +5,6 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
-import jakarta.servlet.http.Cookie
-import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -25,8 +23,8 @@ class JwtUtil(
     private val log = LoggerFactory.getLogger(JwtUtil::class.java)
     private val secretKey: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
 
-    // Access/Refresh Token 생성 및 쿠키 적용
-    fun createToken(type:String, userId: String, response: HttpServletResponse) {
+    // Access/Refresh Token 생성
+    fun createToken(type:String, userId: String): String {
         val claims: Claims = Jwts.claims().setSubject(userId) // Token에 사용자 아이디 추가
         val now = Date()
 
@@ -49,21 +47,7 @@ class JwtUtil(
             redisUtil.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, token)
         }
 
-        createCookie(type, token, validityTime, response)   // JWT 토큰 쿠키 저장 메서드 호출
-    }
-
-    // JWT 토큰을 쿠키에 저장
-    private fun createCookie(type: String, token: String, validityTime: Long, response: HttpServletResponse) {
-        val name = if(type == JwtEnums.ACCESS_TYPE.value) "access_token" else "refresh_token"
-
-        val cookie = Cookie(name, token).apply {
-            isHttpOnly = true
-            secure = true
-            maxAge = (validityTime / 1000).toInt()
-            path = "/"
-        }
-
-        response.addCookie(cookie)
+        return token
     }
 
     // Token에서 사용자 아이디 추출
