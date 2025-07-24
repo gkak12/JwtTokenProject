@@ -27,7 +27,7 @@ class OAuth2Service (
     }
 
     @Transactional
-    fun createUserInfo(email: String, name: String, response: HttpServletResponse){
+    fun createUserInfo(email: String, name: String){
         userRepository.findById(email).orElseGet{
             userRepository.save(
                 User(email, "", name, AccountEnums.ROLE_USER.value)
