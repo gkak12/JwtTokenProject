@@ -1,6 +1,6 @@
 package com.jwt.oauth2.service
 
-import com.jwt.comm.enums.AccountEnums
+import com.jwt.comm.enums.UserEnums
 import com.jwt.comm.enums.JwtEnums
 import com.jwt.comm.util.JwtUtil
 import com.jwt.user.domain.entity.User
@@ -30,7 +30,7 @@ class OAuth2Service (
     fun createUserInfo(email: String, name: String){
         userRepository.findById(email).orElseGet{
             userRepository.save(
-                User(email, "", name, AccountEnums.ROLE_USER.value)
+                User(email, "", name, UserEnums.ROLE_USER.value)
             )
         }
     }

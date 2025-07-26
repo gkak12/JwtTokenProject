@@ -1,6 +1,6 @@
 package com.jwt.oauth2.service
 
-import com.jwt.comm.enums.AccountEnums
+import com.jwt.comm.enums.UserEnums
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
@@ -18,7 +18,7 @@ class CustomOAuth2UserService: DefaultOAuth2UserService() {
         val attributes = oAuth2User.attributes["response"] as? Map<*, *> ?: throw OAuth2AuthenticationException("Response not found")
 
         return DefaultOAuth2User(
-            setOf(SimpleGrantedAuthority(AccountEnums.ROLE_USER.value)),
+            setOf(SimpleGrantedAuthority(UserEnums.ROLE_USER.value)),
             attributes as Map<String, Any>,
             "email"
         )
