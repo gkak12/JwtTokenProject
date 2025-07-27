@@ -23,12 +23,6 @@ class SecurityConfig(
     private val failureHandler: OAuth2AuthenticationFailureHandler
 ) {
 
-    companion object {
-        private val AUTH_WHITELIST = arrayOf(
-            "/users/login", "/users/signup", "/oauth2/me"
-        )
-    }
-
     @Bean
     fun jwtAuthenticationFilter(jwtUtil: JwtUtil, redisUtil: RedisUtil): JwtAuthenticationFilter {
         return JwtAuthenticationFilter(jwtUtil, redisUtil)
@@ -45,7 +39,7 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests {
-                it.requestMatchers(*AUTH_WHITELIST).permitAll()
+                it.requestMatchers(*SecurityAuthWhiteList.paths).permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2Login {
