@@ -1,6 +1,7 @@
 package com.jwt.comm.util
 
 import com.jwt.comm.enums.JwtEnums
+import com.jwt.user.domain.response.ResponseUserDto
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -24,8 +25,11 @@ class JwtUtil(
     private val secretKey: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
 
     // Access/Refresh Token 생성
-    fun createToken(type:String, userId: String): String {
-        val claims: Claims = Jwts.claims().setSubject(userId) // Token에 사용자 아이디 추가
+    fun createToken(type:String, userDto: ResponseUserDto): String {
+        val claims: Claims = Jwts.claims().setSubject(userDto.id) // Token에 사용자 아이디 추가
+        claims["NAME"] = userDto.name   // Token에 사용자 이름 추가
+        claims["ROLE"] = userDto.auth   // Token에 사용자 권한 추가
+
         val now = Date()
 
         // 토큰 타입에 따른 만료 시간 설정
@@ -44,14 +48,20 @@ class JwtUtil(
         log.info(logMsg)
 
         if(type == JwtEnums.REFRESH_TYPE.value){    // refresh 토큰 Redis 저장
-            redisUtil.setRefreshToken(userId+JwtEnums.TOKEN_KEY.value, token)
+            redisUtil.setRefreshToken(userDto.id+JwtEnums.TOKEN_KEY.value, token)
         }
 
         return token
     }
 
+    // Token 유효성 검증
+    fun validateToken(token: String, userId: String, userName: String, userAuth: String): Boolean {
+        return !isTokenExpired(token) && userId == getUserId(token)
+            && userName == getUserName(userName) && userAuth == getUserAuth(userAuth)
+    }
+
     // Token에서 사용자 아이디 추출
-    fun getUsername(token: String): String {
+    fun getUserId(token: String): String {
         return Jwts.parserBuilder()
             .setSigningKey(secretKey)
             .build()
@@ -60,7 +70,25 @@ class JwtUtil(
             .subject
     }
 
-    // Token 유효성 검사
+    // Token에서 사용자 이름 추출
+    fun getUserName(token: String): String {
+        return Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .body["NAME"] as String
+    }
+
+    // Token에서 사용자 권한 추출
+    fun getUserAuth(token: String): String {
+        return Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .body["ROLE"] as String
+    }
+
+    // Token 만료시간 검사
     fun isTokenExpired(token: String): Boolean {
         val expiration = Jwts.parserBuilder()
             .setSigningKey(secretKey)
@@ -70,10 +98,5 @@ class JwtUtil(
             .expiration
 
         return expiration.before(Date())
-    }
-
-    // Token 검증
-    fun validateToken(token: String, userId: String): Boolean {
-        return userId == getUsername(token) && !isTokenExpired(token)
     }
 }
