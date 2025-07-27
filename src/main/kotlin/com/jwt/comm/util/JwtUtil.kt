@@ -57,7 +57,7 @@ class JwtUtil(
     // Token 유효성 검증
     fun validateToken(token: String, userId: String, userName: String, userAuth: String): Boolean {
         return !isTokenExpired(token) && userId == getUserId(token)
-            && userName == getUserName(userName) && userAuth == getUserAuth(userAuth)
+            && userName == getUserName(token) && userAuth == getUserAuth(token)
     }
 
     // Token에서 사용자 아이디 추출
