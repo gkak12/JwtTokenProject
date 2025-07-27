@@ -1,6 +1,7 @@
 package com.jwt.user.service.impl
 
 import com.jwt.comm.enums.JwtEnums
+import com.jwt.comm.security.SecurityUserContext
 import com.jwt.comm.util.JwtUtil
 import com.jwt.comm.util.RedisUtil
 import com.jwt.user.domain.entity.User
@@ -62,6 +63,8 @@ class UserServiceImpl(
             NoSuchElementException(msg)
         }
 
+        val userDto = userMapper.toDto(user)
+
         if (!bCryptPasswordEncoder.matches(userPassword, user.password)) {
             val msg = "$userId: 로그인 시도한 계정 비밀번호가 일치하지 않습니다."
             
@@ -70,8 +73,8 @@ class UserServiceImpl(
         }
 
         return ResponseJwtDto(
-            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId),
-            refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId),
+            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userDto),
+            refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userDto),
             msg = "$userId: 로그인 성공"
         )
     }
@@ -117,8 +120,11 @@ class UserServiceImpl(
 
     @Transactional
     override fun refreshToken(refreshToken: String): ResponseJwtDto {
-        val userId = SecurityContextHolder.getContext().authentication.name
-        val userTokenKey = userId+ JwtEnums.TOKEN_KEY.value
+        val userId = SecurityUserContext.id
+        val userName = SecurityUserContext.name
+        val userAuth = SecurityUserContext.auth
+        val userDto = ResponseUserDto(userId, SecurityUserContext.name, SecurityUserContext.auth)
+        val userTokenKey = userId+JwtEnums.TOKEN_KEY.value
         val storedRefreshToken = requireNotNull(redisUtil.getRefreshToken(userTokenKey)){
             "로그인이 만료되었습니다. 다시 로그인하세요."
         }
@@ -130,13 +136,13 @@ class UserServiceImpl(
         }
 
         // refresh 토큰 검증
-        if(!jwtUtil.validateToken(refreshToken, userId)) {
+        if(!jwtUtil.validateToken(refreshToken, userId, userName, userAuth)) {
             throw IllegalStateException("유효하지 않은 리프레시 토큰입니다.")
         }
 
         return ResponseJwtDto(
-            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userId),
-            refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userId),
+            accessToken = jwtUtil.createToken(JwtEnums.ACCESS_TYPE.value, userDto),
+            refreshToken = jwtUtil.createToken(JwtEnums.REFRESH_TYPE.value, userDto),
             msg = "JWT 토큰 재발급 되었습니다."
         )
     }

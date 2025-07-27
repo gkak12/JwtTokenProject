@@ -35,8 +35,10 @@ class JwtAuthenticationFilter(
         }
 
         try {
-            val accessToken = getAccessTokenFromRequest(request)
-            val userId = jwtUtil.getUsername(accessToken ?: throw IllegalArgumentException("Token is missing"))
+            val accessToken = getAccessTokenFromRequest(request) ?: throw IllegalArgumentException("Token is missing")
+            val userId = jwtUtil.getUserId(accessToken)
+            var userName = jwtUtil.getUserName(accessToken)
+            var userAuth = jwtUtil.getUserAuth(accessToken)
 
             // 로그인 되지 않은 계정인지 확인
             val userTokenKey = userId+JwtEnums.TOKEN_KEY.value
@@ -44,18 +46,28 @@ class JwtAuthenticationFilter(
                 "로그인 되지 않은 계정입니다."
             }
 
-            if (jwtUtil.validateToken(accessToken, userId)) {
-                val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
+            if (jwtUtil.validateToken(accessToken, userId, userName, userAuth)) {
+                val authorities = listOf(SimpleGrantedAuthority(userName))
                 val authentication = UsernamePasswordAuthenticationToken(userId, null, authorities)
                 SecurityContextHolder.getContext().authentication = authentication
+
+                SecurityUserContext.setUserInfo(
+                    SecurityUserContext.UserInfo(
+                        id = userId,
+                        name = userName,
+                        auth = userAuth
+                    )
+                )
             }
+
+            filterChain.doFilter(request, response)
         } catch (e: Exception) {
             log.info("JWT Filter Exception: ${e.message}")
             response.status = HttpServletResponse.SC_UNAUTHORIZED
             return
+        } finally {
+            SecurityUserContext.clear()
         }
-
-        filterChain.doFilter(request, response)
     }
 
     private fun getAccessTokenFromRequest(request: HttpServletRequest): String? {

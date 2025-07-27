@@ -1,6 +1,6 @@
 package com.jwt.comm.security
 
-class SecurityUserContext {
+object SecurityUserContext {
 
     // ThreadLocal에 사용자 정보 저장
     private val userInfoThreadLocal: ThreadLocal<UserInfo> = ThreadLocal()
