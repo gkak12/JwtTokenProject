@@ -27,8 +27,8 @@ class JwtUtil(
     // Access/Refresh Token 생성
     fun createToken(type:String, userDto: ResponseUserDto): String {
         val claims: Claims = Jwts.claims().setSubject(userDto.id) // Token에 사용자 아이디 추가
-        claims["NAME"] = userDto.name   // Token에 사용자 이름 추가
-        claims["ROLE"] = userDto.auth   // Token에 사용자 권한 추가
+        claims[JwtEnums.CLAIMS_NAME.value] = userDto.name   // Token에 사용자 이름 추가
+        claims[JwtEnums.CLAIMS_ROLE.value] = userDto.auth   // Token에 사용자 권한 추가
 
         val now = Date()
 
@@ -76,7 +76,7 @@ class JwtUtil(
             .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
-            .body["NAME"] as String
+            .body[JwtEnums.CLAIMS_NAME.value] as String
     }
 
     // Token에서 사용자 권한 추출
@@ -85,7 +85,7 @@ class JwtUtil(
             .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
-            .body["ROLE"] as String
+            .body[JwtEnums.CLAIMS_ROLE.value] as String
     }
 
     // Token 만료시간 검사
