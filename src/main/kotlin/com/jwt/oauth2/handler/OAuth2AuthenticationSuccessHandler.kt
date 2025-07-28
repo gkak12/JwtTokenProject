@@ -1,5 +1,6 @@
 package com.jwt.oauth2.handler
 
+import com.jwt.comm.enums.UserEnums
 import com.jwt.oauth2.service.OAuth2Service
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -20,8 +21,8 @@ class OAuth2AuthenticationSuccessHandler(
         authentication: Authentication
     ) {
         val principal = authentication.principal as OAuth2User
-        val userEmail = principal.getAttribute<String>("email")
-        val userName = principal.getAttribute<String>("name")
+        val userEmail = principal.getAttribute<String>(UserEnums.NAVER_OAUTH_EMAIL.value)
+        val userName = principal.getAttribute<String>(UserEnums.NAVER_OAUTH_NAME.value)
 
         oAuth2Service.createUserInfo(userEmail, userName)
 
